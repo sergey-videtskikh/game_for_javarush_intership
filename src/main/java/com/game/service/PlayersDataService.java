@@ -115,5 +115,13 @@ public class PlayersDataService {
         return count;
     }
 
+    @Transactional
+    public Player createPLayer(Player player) {
+        player.setLevel(200);
+        player.setUntilNextLevel(300);
+        return playersCrudRepository.save(player);
+    }
+
+
 
 }
