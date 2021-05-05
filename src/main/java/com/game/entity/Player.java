@@ -19,6 +19,7 @@ public class Player {
     private Integer experience; //Опыт персонажа. Диапазон значений 0..10,000,000
     private Integer level; //Уровень персонажа
     private Integer untilNextLevel; //Остаток опыта до следующего уровня
+    @Temporal(TemporalType.DATE)
     private Date birthday; //Дата регистрации    Диапазон значений года 2000..3000 включительно
     private Boolean banned; //Забанен / не забанен
 

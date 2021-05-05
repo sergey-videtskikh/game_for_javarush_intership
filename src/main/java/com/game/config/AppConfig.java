@@ -80,7 +80,9 @@ public class AppConfig {
     private Properties additionalProperties() {
         Properties properties = new Properties();
         properties.setProperty("hibernate.dialect", "org.hibernate.dialect.MySQL5Dialect");
-
+        //properties.setProperty("");
+        properties.setProperty("server.tomcat.accesslog.enabled","true");
+        properties.setProperty("debug","true");
         return properties;
     }
 }
