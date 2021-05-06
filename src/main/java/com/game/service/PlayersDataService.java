@@ -117,11 +117,58 @@ public class PlayersDataService {
 
     @Transactional
     public Player createPLayer(Player player) {
-        player.setLevel(200);
-        player.setUntilNextLevel(300);
+        Integer lvl = calcLevel(player.getExperience());
+        Integer untilNextLevel = calcUntilNextLevel(lvl, player.getExperience());
+        player.setLevel(lvl);
+        player.setUntilNextLevel(untilNextLevel);
+
+        if (player.getBanned() == null) player.setBanned(false);
+
         return playersCrudRepository.save(player);
     }
 
+    @Transactional
+    public Optional<Player> findById(Long id) {
+        return playersCrudRepository.findById(id);
+    }
+
+    public Player save(Player player) {
+        return playersCrudRepository.save(player);
+    }
+
+    public void deleteById(Long id) {
+        playersCrudRepository.deleteById(id);
+    }
+
+    public Player replacePlayer(Player newPlayer, Long id) {
+        return playersCrudRepository.findById(id)
+                .map(player -> {
+                    player.setName(newPlayer.getName());
+                    player.setTitle(newPlayer.getTitle());
+                    player.setRace(newPlayer.getRace());
+                    player.setProfession(newPlayer.getProfession());
+                    player.setBirthday(newPlayer.getBirthday());
+                    player.setExperience(newPlayer.getExperience());
+                    Integer lvl = calcLevel(newPlayer.getExperience());
+                    Integer untilNextLevel = calcUntilNextLevel(lvl, newPlayer.getExperience());
+                    player.setLevel(lvl);
+                    player.setUntilNextLevel(untilNextLevel);
+                    player.setBanned(newPlayer.getBanned());
+                    return playersCrudRepository.save(player);
+                })
+                .orElseGet(() -> {
+                    newPlayer.setId(id);
+                    return playersCrudRepository.save(newPlayer);
+                });
+    }
+
+    private Integer calcLevel(Integer exp){
+        return new Integer((int)((Math.sqrt(2500 + 200. * exp) - 50) / 100));// (Math.sqrt(2500 + 200 * experince) - 50) / 100;
+    }
+
+    private Integer calcUntilNextLevel(Integer lvl, Integer exp) {
+        return 50 * (lvl + 1) * (lvl + 2) - exp;
+    }
 
 
 }

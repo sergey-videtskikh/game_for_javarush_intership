@@ -100,5 +100,21 @@ public class PlayersController {
         return service.createPLayer(newPlayer);
     }
 
+    @GetMapping("/{id}")
+    Player one(@PathVariable Long id) {
+        return service.findById(id)
+                .orElseThrow(() -> new PlayerNotFoundException(id));
+    }
+
+    @PostMapping("/{id}")
+    Player replacePlayer(@RequestBody Player newPlayer, @PathVariable Long id) {
+        return service.replacePlayer(newPlayer, id);
+    }
+
+    @DeleteMapping("/{id}")
+    void deletePlayer(@PathVariable Long id) {
+        service.deleteById(id);
+    }
+
 
 }
