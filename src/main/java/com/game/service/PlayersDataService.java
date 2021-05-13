@@ -15,8 +15,6 @@ import java.util.*;
 @Service
 public class PlayersDataService {
 
-    private Long count;
-
     @Autowired
     private CustomizedPlayersCrudRepository playersCrudRepository;
 
@@ -53,21 +51,7 @@ public class PlayersDataService {
         }
 
 
-        /*count = playersCrudRepository.countByPlayersByNameContainingAndTitleContainingAndRaceContainingAndProfessionContainingAndBirthdayBetweenAndExperienceBetweenAndLevelBetweenAndBannedInAllIgnoreCase(
-                name,
-                title,
-                strRace,
-                strProfession,
-                dateAfter,
-                dateBefore,
-                minExp,
-                maxExp,
-                minLvl,
-                maxLvl,
-                banneds
-        );*/
-
-        List<Player> result = playersCrudRepository.findPlayersByNameContainingAndTitleContainingAndRaceContainingAndProfessionContainingAndBirthdayBetweenAndExperienceBetweenAndLevelBetweenAndBannedInAllIgnoreCase(
+        return playersCrudRepository.findPlayersByNameContainingAndTitleContainingAndRaceContainingAndProfessionContainingAndBirthdayBetweenAndExperienceBetweenAndLevelBetweenAndBannedInAllIgnoreCase(
                 name,
                 title,
                 strRace,
@@ -80,23 +64,6 @@ public class PlayersDataService {
                 maxLvl,
                 banneds,
                 pageable);
-
-        count = new Long(playersCrudRepository.findPlayersByNameContainingAndTitleContainingAndRaceContainingAndProfessionContainingAndBirthdayBetweenAndExperienceBetweenAndLevelBetweenAndBannedInAllIgnoreCase(
-                name,
-                title,
-                strRace,
-                strProfession,
-                dateAfter,
-                dateBefore,
-                minExp,
-                maxExp,
-                minLvl,
-                maxLvl,
-                banneds,
-                Pageable.unpaged()
-        ).size());
-
-        return result;
     }
 
     @Transactional
@@ -112,7 +79,38 @@ public class PlayersDataService {
                       Integer maxLevel,
                       Boolean banned
     ) {
-        return count;
+        String strRace = (race == null) ? "" : race.name();
+        String strProfession = (profession == null) ? "" : profession.name();
+        if (name == null) name = "";
+        if (title == null) title = "";
+        Date dateAfter = (after == null) ? new Date(0L) : new Date(after);
+        Date dateBefore = (before == null) ? new Date() : new Date(before);
+        int minExp = (minExperience == null) ? 0 : minExperience;
+        int maxExp = (maxExperience == null) ? Integer.MAX_VALUE : maxExperience;
+        int minLvl = (minLevel == null) ? 0 : minLevel;
+        int maxLvl = (maxLevel == null) ? Integer.MAX_VALUE : maxLevel;
+        Collection<Boolean> banneds = new ArrayList<>();
+        if (banned == null) {
+            banneds.add(true);
+            banneds.add(false);
+        } else {
+            banneds.add(banned);
+        }
+
+        return (long) playersCrudRepository.findPlayersByNameContainingAndTitleContainingAndRaceContainingAndProfessionContainingAndBirthdayBetweenAndExperienceBetweenAndLevelBetweenAndBannedInAllIgnoreCase(
+                name,
+                title,
+                strRace,
+                strProfession,
+                dateAfter,
+                dateBefore,
+                minExp,
+                maxExp,
+                minLvl,
+                maxLvl,
+                banneds,
+                Pageable.unpaged()
+        ).size();
     }
 
     @Transactional
@@ -143,17 +141,19 @@ public class PlayersDataService {
     public Player replacePlayer(Player newPlayer, Long id) {
         return playersCrudRepository.findById(id)
                 .map(player -> {
-                    player.setName(newPlayer.getName());
-                    player.setTitle(newPlayer.getTitle());
-                    player.setRace(newPlayer.getRace());
-                    player.setProfession(newPlayer.getProfession());
-                    player.setBirthday(newPlayer.getBirthday());
-                    player.setExperience(newPlayer.getExperience());
-                    Integer lvl = calcLevel(newPlayer.getExperience());
-                    Integer untilNextLevel = calcUntilNextLevel(lvl, newPlayer.getExperience());
-                    player.setLevel(lvl);
-                    player.setUntilNextLevel(untilNextLevel);
-                    player.setBanned(newPlayer.getBanned());
+                    if (newPlayer.getName() != null) player.setName(newPlayer.getName());
+                    if (newPlayer.getTitle() != null) player.setTitle(newPlayer.getTitle());
+                    if (newPlayer.getRace() != null) player.setRace(newPlayer.getRace());
+                    if (newPlayer.getProfession() != null) player.setProfession(newPlayer.getProfession());
+                    if (newPlayer.getBirthday() != null) player.setBirthday(newPlayer.getBirthday());
+                    if (newPlayer.getExperience() != null) {
+                        player.setExperience(newPlayer.getExperience());
+                        Integer lvl = calcLevel(newPlayer.getExperience());
+                        Integer untilNextLevel = calcUntilNextLevel(lvl, newPlayer.getExperience());
+                        player.setLevel(lvl);
+                        player.setUntilNextLevel(untilNextLevel);
+                    }
+                    if (newPlayer.getBanned() != null) player.setBanned(newPlayer.getBanned());
                     return playersCrudRepository.save(player);
                 })
                 .orElseGet(() -> {
@@ -163,7 +163,7 @@ public class PlayersDataService {
     }
 
     private Integer calcLevel(Integer exp){
-        return new Integer((int)((Math.sqrt(2500 + 200. * exp) - 50) / 100));// (Math.sqrt(2500 + 200 * experince) - 50) / 100;
+        return (int) ((Math.sqrt(2500 + 200. * exp) - 50) / 100);// (Math.sqrt(2500 + 200 * experince) - 50) / 100;
     }
 
     private Integer calcUntilNextLevel(Integer lvl, Integer exp) {

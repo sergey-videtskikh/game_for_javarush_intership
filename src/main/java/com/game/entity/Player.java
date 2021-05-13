@@ -23,7 +23,7 @@ public class Player {
     private Race race; //Расса персонажа
     @Enumerated(EnumType.STRING)
     private Profession profession; //Профессия персонажа
-    @Size(min=0, max=10_000_000)
+//    @Size(min=0, max=10_000_000)
     private Integer experience; //Опыт персонажа. Диапазон значений 0..10,000,000
     private Integer level; //Уровень персонажа
     private Integer untilNextLevel; //Остаток опыта до следующего уровня
